@@ -1745,6 +1745,163 @@ body {
   z-index: 1;
 }
 
+
+/* ── History drawer ─────────────────────────────────────────── */
+.history-btn {
+  display: flex; align-items: center; gap: 7px;
+  background: rgba(201,169,97,0.12); border: 1px solid rgba(201,169,97,0.35);
+  color: var(--accent-ochre); font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 13px; letter-spacing: 0.18em;
+  padding: 6px 14px; cursor: pointer; transition: all 0.2s;
+}
+.history-btn:hover { background: rgba(201,169,97,0.22); }
+.history-btn .badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--accent-deep-red); color: #fff;
+  border-radius: 50%; width: 18px; height: 18px; font-size: 10px;
+  font-style: normal; letter-spacing: 0; font-family: sans-serif;
+}
+
+.history-overlay {
+  display: none; position: fixed; inset: 0; z-index: 900;
+  background: rgba(10,8,5,0.55); backdrop-filter: blur(4px);
+}
+.history-overlay.open { display: block; }
+
+.history-drawer {
+  position: fixed; top: 0; right: -420px; width: 400px; height: 100%;
+  background: #1A1208; border-left: 1px solid rgba(201,169,97,0.25);
+  z-index: 901; display: flex; flex-direction: column;
+  transition: right 0.32s cubic-bezier(0.4,0,0.2,1);
+  font-family: 'Noto Serif SC', serif;
+}
+.history-drawer.open { right: 0; }
+
+.history-drawer-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 22px 24px 18px;
+  border-bottom: 1px solid rgba(201,169,97,0.2);
+}
+.history-drawer-title {
+  font-family: 'Playfair Display', serif; font-style: italic;
+  font-size: 18px; color: var(--accent-ochre); letter-spacing: 0.04em;
+}
+.history-close-btn {
+  background: none; border: none; color: var(--ink-mid);
+  font-size: 22px; cursor: pointer; padding: 4px 8px; line-height: 1;
+}
+.history-close-btn:hover { color: var(--paper-cream); }
+
+.history-clear-btn {
+  background: none; border: 1px solid rgba(176,48,31,0.4);
+  color: rgba(176,48,31,0.7); font-size: 11px; letter-spacing: 0.12em;
+  padding: 4px 10px; cursor: pointer; font-family: 'Cormorant Garamond', serif;
+  font-style: italic; transition: all 0.2s;
+}
+.history-clear-btn:hover { border-color: #B0301F; color: #B0301F; }
+
+.history-list {
+  flex: 1; overflow-y: auto; padding: 16px 0;
+}
+.history-list::-webkit-scrollbar { width: 4px; }
+.history-list::-webkit-scrollbar-thumb { background: rgba(201,169,97,0.3); }
+
+.history-empty {
+  padding: 60px 24px; text-align: center;
+  color: var(--ink-mid); font-style: italic; font-size: 15px;
+  opacity: 0.6; line-height: 1.8;
+}
+
+.history-item {
+  display: flex; align-items: flex-start; gap: 0;
+  padding: 0; border-bottom: 1px solid rgba(201,169,97,0.1);
+  cursor: pointer; transition: background 0.15s;
+}
+.history-item:hover { background: rgba(201,169,97,0.07); }
+.history-item-body {
+  flex: 1; padding: 14px 20px;
+}
+.history-item-topic {
+  color: var(--paper-cream); font-size: 14px; line-height: 1.5;
+  margin-bottom: 6px; display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.history-item-meta {
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+}
+.history-item-tag {
+  font-size: 10px; letter-spacing: 0.1em; padding: 2px 7px;
+  border: 1px solid rgba(201,169,97,0.35); color: var(--accent-ochre);
+  font-family: 'Cormorant Garamond', serif; font-style: italic;
+}
+.history-item-time {
+  font-size: 10px; color: var(--ink-mid); opacity: 0.6;
+  font-family: 'Cormorant Garamond', serif;
+}
+.history-item-del {
+  background: none; border: none; color: var(--ink-mid);
+  font-size: 16px; cursor: pointer; padding: 14px 16px;
+  opacity: 0; transition: opacity 0.15s, color 0.15s;
+  align-self: stretch; display: flex; align-items: center;
+}
+.history-item:hover .history-item-del { opacity: 0.5; }
+.history-item-del:hover { color: #B0301F; opacity: 1 !important; }
+
+/* ── Share section in output area ───────────────────────────── */
+.share-bar {
+  display: flex; gap: 10px; align-items: center;
+  padding: 12px 0 0; flex-wrap: wrap;
+}
+.share-btn {
+  display: flex; align-items: center; gap: 7px;
+  background: rgba(201,169,97,0.1); border: 1px solid rgba(201,169,97,0.35);
+  color: var(--accent-ochre); font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 13px; letter-spacing: 0.15em;
+  padding: 8px 18px; cursor: pointer; transition: all 0.2s;
+}
+.share-btn:hover { background: rgba(201,169,97,0.22); }
+
+/* ── Share banner (shown when page loaded via shared URL) ───── */
+.share-banner {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 800;
+  background: linear-gradient(135deg, rgba(30,18,8,0.97), rgba(20,10,5,0.97));
+  border-bottom: 1px solid rgba(201,169,97,0.35);
+  padding: 14px 24px; display: flex; align-items: center;
+  justify-content: space-between; gap: 16px; flex-wrap: wrap;
+}
+.share-banner-text {
+  font-family: 'Noto Serif SC', serif; font-size: 14px;
+  color: var(--paper-cream);
+}
+.share-banner-text em { color: var(--accent-ochre); font-style: italic; }
+.share-banner-actions { display: flex; gap: 10px; }
+.share-banner-try-btn {
+  background: rgba(201,169,97,0.15); border: 1px solid rgba(201,169,97,0.45);
+  color: var(--accent-ochre); font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 13px; letter-spacing: 0.12em;
+  padding: 6px 16px; cursor: pointer; transition: all 0.2s;
+}
+.share-banner-try-btn:hover { background: rgba(201,169,97,0.28); }
+.share-banner-close {
+  background: none; border: none; color: var(--ink-mid);
+  font-size: 18px; cursor: pointer;
+}
+
+/* ── Toast ──────────────────────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(80px);
+  background: rgba(20,16,10,0.95); border: 1px solid rgba(201,169,97,0.4);
+  color: var(--paper-cream); font-family: 'Noto Serif SC', serif;
+  font-size: 14px; padding: 12px 24px; z-index: 999;
+  transition: transform 0.3s ease, opacity 0.3s ease; opacity: 0;
+  letter-spacing: 0.05em; white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+@media (max-width: 600px) {
+  .history-drawer { width: 100%; right: -100%; }
+  .history-drawer.open { right: 0; }
+}
 </style>
 </head>
 <body>
@@ -1772,7 +1929,26 @@ body {
       <span class="header-title-en">Daily Philosophy Translator</span>
     </div>
     <div class="header-right" id="date-stamp"></div>
+    <button class="history-btn" id="history-toggle" title="翻译历史">
+      <span>📖 历史</span><span class="badge" id="history-badge" style="display:none">0</span>
+    </button>
   </header>
+
+  <!-- History overlay + drawer -->
+  <div class="history-overlay" id="history-overlay"></div>
+  <div class="history-drawer" id="history-drawer">
+    <div class="history-drawer-head">
+      <span class="history-drawer-title">翻译历史 · Chronicle</span>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <button class="history-clear-btn" id="history-clear">清空全部</button>
+        <button class="history-close-btn" id="history-close">✕</button>
+      </div>
+    </div>
+    <div class="history-list" id="history-list"></div>
+  </div>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast"></div>
 
   <!-- HERO -->
   <section class="hero">
@@ -1957,6 +2133,194 @@ function setupSelectors(rowId, stateKey) {
     if (stateKey === 'brain') renderDecorations(val);
   });
 }
+
+// ── Tear SVG (inline, for html2canvas in export image) ─────────────────────
+const TEAR_SVG_TOP = '<svg viewBox="0 0 1000 14" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d=\'M 0 0 L 1000 0 L 1000 12.5 Q 995.5 13.7 991.0 5.0 Q 972.0 8.8 968.0 8.3 Q 947.5 10.6 938.0 10.0 Q 917.0 12.6 910.0 10.1 Q 874.5 8.8 863.0 8.6 Q 826.5 12.7 815.0 8.4 Q 780.5 13.8 772.0 12.4 Q 757.0 13.3 753.0 12.6 Q 721.0 11.0 714.0 10.5 Q 685.0 13.4 673.0 11.8 Q 646.0 6.1 635.0 4.0 Q 604.5 11.7 592.0 8.6 Q 573.0 12.5 562.0 9.9 Q 535.5 3.4 530.0 2.7 Q 499.5 10.3 492.0 10.0 Q 458.5 12.2 446.0 3.0 Q 412.5 13.5 401.0 9.6 Q 366.0 9.2 357.0 8.2 Q 335.5 11.4 323.0 9.9 Q 303.0 11.1 298.0 11.4 Q 272.5 11.5 263.0 11.2 Q 238.0 12.5 233.0 11.9 Q 214.5 12.7 205.0 3.5 Q 174.0 12.9 163.0 12.0 Q 138.5 11.7 133.0 11.8 Q 114.5 10.1 108.0 8.0 Q 79.5 11.9 67.0 11.6 Q 55.0 4.0 51.0 4.0 Q 18.5 3.5 11.0 3.5 L 0 8 Z\' fill="#0a0805"/></svg>';
+const TEAR_SVG_BOT = '<svg viewBox="0 0 1000 14" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d=\'M 0 0 L 1000 0 L 1000 9.2 Q 999.0 10.3 998.0 9.0 Q 976.0 13.4 970.0 12.5 Q 946.5 13.4 937.0 8.4 Q 920.5 12.8 915.0 11.8 Q 897.0 11.9 887.0 11.4 Q 853.0 10.3 841.0 2.5 Q 812.5 10.3 803.0 4.3 Q 777.0 12.5 769.0 3.2 Q 753.5 11.4 749.0 11.9 Q 718.0 12.5 709.0 11.1 Q 685.0 11.3 680.0 11.4 Q 658.5 11.5 647.0 8.9 Q 614.5 10.3 603.0 9.0 Q 572.0 4.9 567.0 3.8 Q 541.0 12.5 535.0 5.6 Q 510.0 12.5 497.0 11.4 Q 478.0 13.8 471.0 5.0 Q 451.0 10.7 446.0 10.7 Q 424.5 5.4 419.0 2.6 Q 389.5 11.7 381.0 10.7 Q 358.5 9.4 347.0 9.7 Q 323.5 13.2 319.0 4.0 Q 288.5 10.6 279.0 10.8 Q 243.5 9.3 231.0 9.0 Q 210.5 12.5 200.0 12.5 Q 177.0 14.0 169.0 12.0 Q 146.5 13.0 138.0 12.0 Q 121.0 13.0 114.0 10.8 Q 93.5 10.8 82.0 10.8 Q 63.0 11.2 52.0 10.5 Q 22.5 10.8 16.0 4.2 L 0 8 Z\' fill="#0a0805"/></svg>';
+
+// ── History ─────────────────────────────────────────────────────────────────
+const HISTORY_KEY = 'dpt_history_v1';
+const MAX_HISTORY = 30;
+
+function saveToHistory(entry) {
+  let hist = getHistory();
+  hist.unshift(entry);
+  if (hist.length > MAX_HISTORY) hist = hist.slice(0, MAX_HISTORY);
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(hist)); } catch {}
+  updateHistoryBadge();
+}
+
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function updateHistoryBadge() {
+  const n = getHistory().length;
+  const badge = document.getElementById('history-badge');
+  if (!badge) return;
+  badge.textContent = n;
+  badge.style.display = n ? 'inline-flex' : 'none';
+}
+
+function deleteHistoryItem(id) {
+  const hist = getHistory().filter(h => h.id !== id);
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(hist)); } catch {}
+  updateHistoryBadge();
+  renderHistoryList();
+}
+
+function formatHistoryTime(iso) {
+  const d = new Date(iso);
+  const now = new Date();
+  const diff = now - d;
+  if (diff < 60000) return '刚刚';
+  if (diff < 3600000) return Math.floor(diff/60000) + ' 分钟前';
+  if (diff < 86400000) return Math.floor(diff/3600000) + ' 小时前';
+  return (d.getMonth()+1) + '/' + d.getDate() + ' ' + d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+}
+
+function renderHistoryList() {
+  const list = document.getElementById('history-list');
+  if (!list) return;
+  const hist = getHistory();
+  if (!hist.length) {
+    list.innerHTML = '<div class="history-empty">还没有翻译记录。<br>开始你的第一次翻译吧。</div>';
+    return;
+  }
+  const DLABELS = {'1':'大白话','2':'有点想法','3':'有内容','4':'有点专业','5':'学术狂飙'};
+  const BLABELS = {'1':'正面回答','2':'换个角度','3':'类比迁移','4':'反例打脸','5':'跨界连接'};
+  list.innerHTML = hist.map(h => `
+    <div class="history-item" data-id="${h.id}">
+      <div class="history-item-body">
+        <div class="history-item-topic">${escapeHtml(h.topic)}</div>
+        <div class="history-item-meta">
+          <span class="history-item-tag">${DLABELS[h.depth]||h.depth}</span>
+          <span class="history-item-tag">${BLABELS[h.brain]||h.brain}</span>
+          <span class="history-item-time">${formatHistoryTime(h.timestamp)}</span>
+        </div>
+      </div>
+      <button class="history-item-del" data-del="${h.id}" title="删除">✕</button>
+    </div>`).join('');
+
+  list.querySelectorAll('.history-item').forEach(el => {
+    el.addEventListener('click', e => {
+      if (e.target.closest('[data-del]')) return;
+      const id = parseInt(el.dataset.id);
+      const entry = getHistory().find(h => h.id === id);
+      if (!entry) return;
+      // Restore state
+      state.depth = entry.depth; state.brain = entry.brain;
+      document.querySelectorAll('[data-depth]').forEach(b => b.classList.toggle('active', parseInt(b.dataset.depth)===entry.depth));
+      document.querySelectorAll('[data-brain]').forEach(b => b.classList.toggle('active', parseInt(b.dataset.brain)===entry.brain));
+      updateBackground(entry.depth); renderDecorations(entry.brain);
+      document.getElementById('topic-input').value = entry.topic;
+      renderCards(entry.parsed, entry.isWild);
+      document.getElementById('output-area').scrollIntoView({behavior:'smooth', block:'start'});
+      closeHistoryDrawer();
+    });
+    el.querySelector('[data-del]').addEventListener('click', e => {
+      e.stopPropagation();
+      const id = parseInt(e.currentTarget.dataset.del);
+      deleteHistoryItem(id);
+    });
+  });
+}
+
+function openHistoryDrawer() {
+  renderHistoryList();
+  document.getElementById('history-overlay').classList.add('open');
+  document.getElementById('history-drawer').classList.add('open');
+}
+function closeHistoryDrawer() {
+  document.getElementById('history-overlay').classList.remove('open');
+  document.getElementById('history-drawer').classList.remove('open');
+}
+
+document.getElementById('history-toggle').addEventListener('click', openHistoryDrawer);
+document.getElementById('history-close').addEventListener('click', closeHistoryDrawer);
+document.getElementById('history-overlay').addEventListener('click', closeHistoryDrawer);
+document.getElementById('history-clear').addEventListener('click', () => {
+  if (!confirm('确认清空所有翻译历史?')) return;
+  localStorage.removeItem(HISTORY_KEY);
+  updateHistoryBadge();
+  renderHistoryList();
+});
+
+updateHistoryBadge(); // init badge on load
+
+// ── Share ───────────────────────────────────────────────────────────────────
+function generateShareUrl(entry) {
+  const payload = {
+    t: entry.topic,
+    d: entry.depth,
+    b: entry.brain,
+    f: entry.parsed.friend || '',
+    k: entry.parsed.think  || '',
+    p: entry.parsed.deep   || '',
+    w: entry.isWild ? 1 : 0,
+    s: entry.parsed.disclaimer || ''
+  };
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  const url = new URL(window.location.href.split('?')[0].split('#')[0]);
+  url.searchParams.set('s', encoded);
+  return url.toString();
+}
+
+function showToast(msg, duration) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration || 2400);
+}
+
+function copyShareUrl(entry) {
+  const url = generateShareUrl(entry);
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => showToast('🔗 分享链接已复制,发给朋友吧'));
+  } else {
+    const el = document.createElement('textarea');
+    el.value = url; el.style.position = 'fixed'; el.style.opacity = '0';
+    document.body.appendChild(el); el.select();
+    document.execCommand('copy'); document.body.removeChild(el);
+    showToast('🔗 分享链接已复制,发给朋友吧');
+  }
+}
+
+// Load shared content from URL parameter on page load
+function loadFromShareUrl() {
+  const s = new URLSearchParams(window.location.search).get('s');
+  if (!s) return;
+  try {
+    const p = JSON.parse(decodeURIComponent(escape(atob(s))));
+    const parsed = { friend: p.f||'', think: p.k||'', deep: p.p||'', disclaimer: p.s||'' };
+    state.depth = p.d||3; state.brain = p.b||3;
+    document.querySelectorAll('[data-depth]').forEach(b => b.classList.toggle('active', parseInt(b.dataset.depth)===state.depth));
+    document.querySelectorAll('[data-brain]').forEach(b => b.classList.toggle('active', parseInt(b.dataset.brain)===state.brain));
+    updateBackground(state.depth); renderDecorations(state.brain);
+    document.getElementById('topic-input').value = p.t||'';
+    renderCards(parsed, p.w===1);
+    document.getElementById('output-area').scrollIntoView({behavior:'smooth', block:'start'});
+    // Show share banner
+    const banner = document.createElement('div');
+    banner.className = 'share-banner';
+    banner.innerHTML = `
+      <div class="share-banner-text">
+        朋友分享了一次哲学翻译给你 ·
+        <em>"${escapeHtml((p.t||'').slice(0,30))}"</em>
+      </div>
+      <div class="share-banner-actions">
+        <button class="share-banner-try-btn" onclick="document.getElementById('topic-input').focus();this.closest('.share-banner').remove()">
+          自己也来翻译一个
+        </button>
+        <button class="share-banner-close" onclick="this.closest('.share-banner').remove()">✕</button>
+      </div>`;
+    document.body.prepend(banner);
+    // Clear URL param without reload
+    history.replaceState(null, '', window.location.pathname);
+  } catch(e) { console.warn('share decode failed', e); }
+}
+
 setupSelectors('depth-row', 'depth');
 setupSelectors('brain-row', 'brain');
 
@@ -2326,10 +2690,12 @@ function renderCards(parsed, isWild) {
   // Store for export
   const topic = document.getElementById('topic-input').value.trim();
   lastTranslation = {
+    id: Date.now(),
     topic, depth: state.depth, brain: state.brain,
     parsed, isWild,
-    timestamp: new Date()
+    timestamp: new Date().toISOString()
   };
+  saveToHistory(lastTranslation);
 
   let deepHTML = '';
   if (parsed.deep) {
@@ -2364,6 +2730,11 @@ function renderCards(parsed, isWild) {
     '<div class="export-bar">' +
     '<button class="export-btn" id="export-pdf-btn">' +
     '<span class="ico">🖼️</span><span>保存为图片 · Save as Image</span></button>' +
+    '</div>' +
+    '<div class="share-bar">' +
+    '<button class="share-btn" id="share-link-btn">' +
+    '<span>🔗</span><span>复制分享链接</span>' +
+    '</button>' +
     '</div>';
 
   document.getElementById('output-area').innerHTML =
@@ -2381,6 +2752,7 @@ function renderCards(parsed, isWild) {
 
   // Wire up export
   document.getElementById('export-pdf-btn').addEventListener('click', exportToPDF);
+  document.getElementById('share-link-btn').addEventListener('click', () => copyShareUrl(lastTranslation));
 }
 
 const DEPTH_LABELS = {
@@ -2528,7 +2900,7 @@ function buildPdfHTML(data) {
   if (bookTitle || intro || warn || parsed.deep) {
     deepBlock =
       '<div class="pdf-card pdf-card-3">' +
-        '<div class="pdf-tear pdf-tear-top"></div>' +
+        '<div class="pdf-tear pdf-tear-top">' + TEAR_SVG_TOP + '</div>' +
         '<div class="pdf-card-header">' +
           '<div class="pdf-card-title"><span class="pdf-card-title-emoji">📚</span><span class="zh">沉读</span></div>' +
           '<div class="pdf-card-meta">Lectio · Deep Dive · No. 03</div>' +
@@ -2538,7 +2910,7 @@ function buildPdfHTML(data) {
         (intro ? '<div class="pdf-book-intro">' + escapeHtml(intro).replace(/\n/g, '<br>') + '</div>' : '') +
         (warn ? '<div class="pdf-book-warn"><b>但要小心:</b> ' + escapeHtml(warn).replace(/\n/g, '<br>') + '</div>' : '') +
         (!bookTitle && !intro && !warn ? '<div class="pdf-card-body">' + escapeHtml(parsed.deep).replace(/\n/g, '<br>') + '</div>' : '') +
-        '<div class="pdf-tear pdf-tear-bottom"></div>' +
+        '<div class="pdf-tear pdf-tear-bottom">' + TEAR_SVG_BOT + '</div>' +
       '</div>';
   }
 
@@ -2584,23 +2956,23 @@ function buildPdfHTML(data) {
     '<div class="pdf-divider">§</div>' +
 
     (parsed.friend ? '<div class="pdf-card pdf-card-1">' +
-      '<div class="pdf-tear pdf-tear-top"></div>' +
+      '<div class="pdf-tear pdf-tear-top">' + TEAR_SVG_TOP + '</div>' +
       '<div class="pdf-card-header">' +
         '<div class="pdf-card-title"><span class="pdf-card-title-emoji">🪶</span><span class="zh">碎念</span></div>' +
         '<div class="pdf-card-meta">Murmur · For the feed · No. 01</div>' +
       '</div>' +
       '<div class="pdf-card-body">' + escapeHtml(parsed.friend).replace(/\n/g, '<br>') + '</div>' +
-      '<div class="pdf-tear pdf-tear-bottom"></div>' +
+      '<div class="pdf-tear pdf-tear-bottom">' + TEAR_SVG_BOT + '</div>' +
     '</div>' : '') +
 
     (parsed.think ? '<div class="pdf-card pdf-card-2">' +
-      '<div class="pdf-tear pdf-tear-top"></div>' +
+      '<div class="pdf-tear pdf-tear-top">' + TEAR_SVG_TOP + '</div>' +
       '<div class="pdf-card-header">' +
         '<div class="pdf-card-title"><span class="pdf-card-title-emoji">🧠</span><span class="zh">思辨</span></div>' +
         '<div class="pdf-card-meta">Reflection · To think with · No. 02</div>' +
       '</div>' +
       '<div class="pdf-card-body">' + escapeHtml(parsed.think).replace(/\n/g, '<br>') + '</div>' +
-      '<div class="pdf-tear pdf-tear-bottom"></div>' +
+      '<div class="pdf-tear pdf-tear-bottom">' + TEAR_SVG_BOT + '</div>' +
     '</div>' : '') +
 
     deepBlock +
@@ -2720,6 +3092,9 @@ async function exportToPDF() {
     btn.innerHTML = originalText;
   }
 }
+
+// Load any shared content from URL on page start
+loadFromShareUrl();
 
 function escapeHtml(text) {
   if (!text) return '';
