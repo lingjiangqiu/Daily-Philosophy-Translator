@@ -2900,7 +2900,7 @@ function buildPdfHTML(data) {
   if (bookTitle || intro || warn || parsed.deep) {
     deepBlock =
       '<div class="pdf-card pdf-card-3">' +
-        '<div class="pdf-tear pdf-tear-top">' + TEAR_SVG_TOP + '</div>' +
+        '<div class="pdf-tear pdf-tear-top"></div>' +
         '<div class="pdf-card-header">' +
           '<div class="pdf-card-title"><span class="pdf-card-title-emoji">📚</span><span class="zh">沉读</span></div>' +
           '<div class="pdf-card-meta">Lectio · Deep Dive · No. 03</div>' +
@@ -2910,7 +2910,7 @@ function buildPdfHTML(data) {
         (intro ? '<div class="pdf-book-intro">' + escapeHtml(intro).replace(/\n/g, '<br>') + '</div>' : '') +
         (warn ? '<div class="pdf-book-warn"><b>但要小心:</b> ' + escapeHtml(warn).replace(/\n/g, '<br>') + '</div>' : '') +
         (!bookTitle && !intro && !warn ? '<div class="pdf-card-body">' + escapeHtml(parsed.deep).replace(/\n/g, '<br>') + '</div>' : '') +
-        '<div class="pdf-tear pdf-tear-bottom">' + TEAR_SVG_BOT + '</div>' +
+        '<div class="pdf-tear pdf-tear-bottom"></div>' +
       '</div>';
   }
 
@@ -2956,23 +2956,23 @@ function buildPdfHTML(data) {
     '<div class="pdf-divider">§</div>' +
 
     (parsed.friend ? '<div class="pdf-card pdf-card-1">' +
-      '<div class="pdf-tear pdf-tear-top">' + TEAR_SVG_TOP + '</div>' +
+      '<div class="pdf-tear pdf-tear-top"></div>' +
       '<div class="pdf-card-header">' +
         '<div class="pdf-card-title"><span class="pdf-card-title-emoji">🪶</span><span class="zh">碎念</span></div>' +
         '<div class="pdf-card-meta">Murmur · For the feed · No. 01</div>' +
       '</div>' +
       '<div class="pdf-card-body">' + escapeHtml(parsed.friend).replace(/\n/g, '<br>') + '</div>' +
-      '<div class="pdf-tear pdf-tear-bottom">' + TEAR_SVG_BOT + '</div>' +
+      '<div class="pdf-tear pdf-tear-bottom"></div>' +
     '</div>' : '') +
 
     (parsed.think ? '<div class="pdf-card pdf-card-2">' +
-      '<div class="pdf-tear pdf-tear-top">' + TEAR_SVG_TOP + '</div>' +
+      '<div class="pdf-tear pdf-tear-top"></div>' +
       '<div class="pdf-card-header">' +
         '<div class="pdf-card-title"><span class="pdf-card-title-emoji">🧠</span><span class="zh">思辨</span></div>' +
         '<div class="pdf-card-meta">Reflection · To think with · No. 02</div>' +
       '</div>' +
       '<div class="pdf-card-body">' + escapeHtml(parsed.think).replace(/\n/g, '<br>') + '</div>' +
-      '<div class="pdf-tear pdf-tear-bottom">' + TEAR_SVG_BOT + '</div>' +
+      '<div class="pdf-tear pdf-tear-bottom"></div>' +
     '</div>' : '') +
 
     deepBlock +
@@ -3048,17 +3048,26 @@ async function exportToPDF() {
     }
 
     console.log('[IMG] Starting html2canvas...');
-    const canvas = await html2canvas(target, {
-      scale: 1.5,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: '#14100A',
-      logging: false,
-      width: target.scrollWidth,
-      height: target.scrollHeight,
-      windowWidth: target.scrollWidth,
-      windowHeight: target.scrollHeight
-    });
+    // Race against a 15-second timeout — html2canvas can hang on complex SVGs
+    const canvas = await Promise.race([
+      html2canvas(target, {
+        scale: 1.5,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#14100A',
+        logging: false,
+        imageTimeout: 8000,
+        width: target.scrollWidth,
+        height: target.scrollHeight,
+        windowWidth: target.scrollWidth,
+        windowHeight: target.scrollHeight,
+        // Skip decoration layers that html2canvas can't handle well
+        ignoreElements: el => el.classList.contains('pdf-brain-decos')
+      }),
+      new Promise((_, rej) =>
+        setTimeout(() => rej(new Error('CANVAS_TIMEOUT')), 15000)
+      )
+    ]);
 
     console.log('[IMG] Canvas created:', canvas.width, 'x', canvas.height);
 
@@ -3085,7 +3094,25 @@ async function exportToPDF() {
 
   } catch (err) {
     console.error('[IMG] Error:', err);
-    alert('图片生成失败:' + err.message + '\n\n请按 F12 看 Console 错误信息,截图发给开发者。');
+    if (err.message === 'CANVAS_TIMEOUT') {
+      const ok = confirm(
+        '图片生成超时了(背景元素太复杂)。\n\n改用浏览器打印对话框?\n' +
+        '(选"另存为 PDF"或"打印到 PDF")\n\n点确定打开打印界面。'
+      );
+      if (ok) {
+        // Brief print stylesheet
+        const printStyle = document.createElement('style');
+        printStyle.id = '_print_override';
+        printStyle.textContent =
+          '@media print { body > *:not(.container) { display:none!important; } ' +
+          '.bg-stage,.bg-scrim,.bg-grain,.deco-layer { display:none!important; } }';
+        document.head.appendChild(printStyle);
+        window.print();
+        setTimeout(() => { const s = document.getElementById('_print_override'); if (s) s.remove(); }, 2000);
+      }
+    } else {
+      alert('图片生成失败:' + err.message + '\n\n请按 F12 看 Console 错误信息。');
+    }
   } finally {
     overlay.remove();
     btn.disabled = false;
