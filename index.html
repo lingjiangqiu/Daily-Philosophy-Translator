@@ -1908,9 +1908,77 @@ body {
   .history-drawer { width: 100%; right: -100%; }
   .history-drawer.open { right: 0; }
 }
+
+/* ── Invite code modal ──────────────────────────────────────── */
+.invite-overlay {
+  display: none; position: fixed; inset: 0; z-index: 1000;
+  background: rgba(8,6,4,0.82); backdrop-filter: blur(8px);
+  align-items: center; justify-content: center;
+}
+.invite-overlay.open { display: flex; }
+.invite-box {
+  background: linear-gradient(160deg, #1f1610, #15100a);
+  border: 1px solid rgba(201,169,97,0.35);
+  max-width: 440px; width: 90%; padding: 40px 38px;
+  font-family: 'Noto Serif SC', serif; text-align: center;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+}
+.invite-mark {
+  font-family: 'Playfair Display', serif; font-size: 34px;
+  color: var(--accent-ochre); margin-bottom: 6px;
+}
+.invite-title {
+  font-family: 'Playfair Display', serif; font-style: italic;
+  font-size: 20px; color: var(--paper-cream); margin-bottom: 10px;
+}
+.invite-desc {
+  font-size: 14px; color: var(--ink-mid); line-height: 1.7;
+  margin-bottom: 24px;
+}
+.invite-input {
+  width: 100%; padding: 13px 16px; font-size: 15px;
+  background: rgba(0,0,0,0.3); border: 1px solid rgba(201,169,97,0.4);
+  color: var(--paper-cream); font-family: 'Noto Serif SC', serif;
+  text-align: center; letter-spacing: 0.1em; box-sizing: border-box;
+  margin-bottom: 16px;
+}
+.invite-input:focus { outline: none; border-color: var(--accent-ochre); }
+.invite-btn {
+  width: 100%; padding: 13px; font-size: 15px; cursor: pointer;
+  background: var(--accent-ochre); color: #15100a; border: none;
+  font-family: 'Playfair Display', serif; font-style: italic;
+  letter-spacing: 0.06em; transition: background 0.2s;
+}
+.invite-btn:hover { background: #d8b878; }
+.invite-error {
+  color: #d96a5a; font-size: 13px; margin-bottom: 12px; min-height: 18px;
+}
+.invite-hint {
+  margin-top: 18px; font-size: 12px; color: var(--ink-mid); opacity: 0.7;
+  line-height: 1.6;
+}
 </style>
 </head>
 <body>
+  <!-- Invite code modal -->
+  <div class="invite-overlay" id="invite-overlay">
+    <div class="invite-box">
+      <div class="invite-mark">日</div>
+      <div class="invite-title">Invitation Only</div>
+      <div class="invite-desc">
+        这是一个受邀使用的小工具。<br>
+        请输入邀请码,开始你的哲学翻译。
+      </div>
+      <div class="invite-error" id="invite-error"></div>
+      <input type="text" class="invite-input" id="invite-input"
+             placeholder="输入邀请码" autocomplete="off" />
+      <button class="invite-btn" id="invite-submit">进 入 · Enter</button>
+      <div class="invite-hint">
+        没有邀请码?你也可以在页面底部的「高级设置」里<br>填入自己的 DeepSeek API Key 使用。
+      </div>
+    </div>
+  </div>
+
 
 <!-- ============ BACKGROUND LAYERS ============ -->
 <div class="bg-stage">
@@ -2615,14 +2683,26 @@ async function handleSubmit() {
   }
 }
 
+// 阿里云 FC 后端地址(国内可访问 + HTTPS + 藏Key + 邀请码验证)
+const FC_API_ENDPOINT = 'https://philosoanslator-zbeskiyajt.cn-hangzhou.fcapp.run';
+
+// 邀请码:存在浏览器里,第一次输入后不再反复问
+const INVITE_KEY = 'dpt_invite_code';
+function getInviteCode() {
+  try { return localStorage.getItem(INVITE_KEY) || ''; } catch { return ''; }
+}
+function setInviteCode(code) {
+  try { localStorage.setItem(INVITE_KEY, code); } catch {}
+}
+
 async function callTranslate(topic, depth, brain) {
-  // Primary path: call our own backend proxy (/api/translate).
-  // The backend holds the API key + the system prompt server-side.
+  // Primary path: call our FC backend (holds key + prompt + verifies invite code).
+  const invite = getInviteCode();
   try {
-    const resp = await fetch('/api/translate', {
+    const resp = await fetch(FC_API_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ topic, depth, brain })
+      body: JSON.stringify({ topic, depth, brain, invite })
     });
 
     if (resp.ok) {
@@ -2630,20 +2710,24 @@ async function callTranslate(topic, depth, brain) {
       return data.content;
     }
 
-    // 404 → no backend present (e.g. opened as a static file / GitHub Pages)
-    if (resp.status === 404) throw { _noBackend: true };
+    // 401 → invite code wrong/missing: clear it and re-prompt
+    if (resp.status === 401) {
+      setInviteCode('');
+      openInviteModal();
+      throw new Error('邀请码无效,请重新输入邀请码后再试。');
+    }
 
     // Other errors (rate limit / upstream) → surface the backend's message
     const errData = await resp.json().catch(() => ({}));
     throw new Error(errData.error || ('HTTP ' + resp.status));
 
   } catch (e) {
-    // Fallback: no backend available — use the user's own key if they provided one
-    if (e && (e._noBackend || (e.message && e.message.includes('Failed to fetch')))) {
+    // Network failure → offer the user's own key fallback if they set one
+    if (e && e.message && e.message.includes('Failed to fetch')) {
       if (state.apiKey) {
         return await callDeepSeekDirect(topic, depth, brain);
       }
-      throw new Error('这个版本需要后端支持。如果你是在本地或 GitHub Pages 打开,请在「高级设置」里填入你自己的 DeepSeek Key。');
+      throw new Error('连接后端失败。可能是网络问题,或在「高级设置」里填入你自己的 DeepSeek Key 作为备用。');
     }
     throw e;
   }
@@ -3172,6 +3256,37 @@ async function exportToPDF() {
     btn.innerHTML = originalText;
   }
 }
+
+
+// ── Invite code modal logic ─────────────────────────────────────────────────
+function openInviteModal() {
+  const ov = document.getElementById('invite-overlay');
+  if (ov) { ov.classList.add('open'); setTimeout(() => { const i = document.getElementById('invite-input'); if (i) i.focus(); }, 100); }
+}
+function closeInviteModal() {
+  const ov = document.getElementById('invite-overlay');
+  if (ov) ov.classList.remove('open');
+}
+function submitInvite() {
+  const input = document.getElementById('invite-input');
+  const errEl = document.getElementById('invite-error');
+  const code = (input.value || '').trim();
+  if (!code) { errEl.textContent = '请输入邀请码'; return; }
+  // Store locally; the backend is the real validator. We optimistically accept,
+  // and callTranslate will re-open this modal if the backend rejects (401).
+  setInviteCode(code);
+  errEl.textContent = '';
+  closeInviteModal();
+}
+(function initInvite() {
+  const submitBtn = document.getElementById('invite-submit');
+  const input = document.getElementById('invite-input');
+  if (submitBtn) submitBtn.addEventListener('click', submitInvite);
+  if (input) input.addEventListener('keydown', e => { if (e.key === 'Enter') submitInvite(); });
+  // First visit (no code stored, and not opening a shared link) → ask for code
+  const hasShared = new URLSearchParams(window.location.search).get('s');
+  if (!getInviteCode() && !hasShared) openInviteModal();
+})();
 
 // Load any shared content from URL on page start
 loadFromShareUrl();
